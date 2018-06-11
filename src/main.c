@@ -11,10 +11,26 @@
 
 #define WORKERS 3
 
+int complete[WORKERS];
+pthread_mutex_t lock;
+
 void* worker(void *arguments) {
   struct arg_struct *args = (struct arg_struct *)arguments;
-  for (int i = 0; i < ((args->img)->height); i++) {
-    blur_line(args->img, args->filtrada, args->canal, i);
+  int canal=0;
+  while (1) {
+    pthread_mutex_lock(&lock);
+    while ( (complete[canal]!=0) && (canal < WORKERS)) {
+      canal++;
+    }
+    if (canal >= WORKERS) {
+      pthread_mutex_unlock(&lock);
+      break;
+    }
+    complete[canal] = 1;
+    pthread_mutex_unlock(&lock);
+    for (int i = 0; i < ((args->img)->height); i++) {
+      blur_line(args->img, args->filtrada, canal, i);
+    }
   }
   return NULL;
 }
@@ -36,20 +52,13 @@ int main(int argc, char **argv) {
   (*filtrada).b = malloc(sizeof(float) * img.width * img.height);
   (*filtrada).width = img.width;
   (*filtrada).height = img.height;
+  struct arg_struct args;
+  args.img = &img;
+  args.filtrada = filtrada;
 
   t0=clock();
   /* Disparando threads */
   for (int i=0; i<WORKERS; i++) {
-    struct arg_struct args;
-    args.img = &img;
-    args.filtrada = filtrada;
-    if (i == RED) {
-      args.canal = RED;
-    } else if (i == GREEN) {
-      args.canal = GREEN;
-    } else if (i == BLUE) {
-      args.canal = BLUE;
-    }
     pthread_create(&(workers[i]), NULL, worker, (void*)(&args));
   }
   /* Esperando threads */
@@ -94,6 +103,8 @@ int main(int argc, char **argv) {
 
   sprintf (saida, "./results/saida%d.jpg", atoi(argv[2]));
   salvar_imagem(saida, filtrada);
+  sprintf (saida, "./results/saida0%d.jpg", atoi(argv[2]));
+  salvar_imagem(saida, filtrada_compartilhada);
   liberar_imagem(&img);
   liberar_imagem(filtrada);
   return 0;
