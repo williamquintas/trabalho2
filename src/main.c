@@ -37,7 +37,6 @@ void* worker(void *arguments) {
 
 int main(int argc, char **argv) {
   clock_t t0, t1;
-  time_t tempo1, tempo2;
   imagem img;
   imagem *filtrada, *img_compartilhada, *filtrada_compartilhada;
   pthread_t workers[WORKERS];
@@ -72,7 +71,6 @@ int main(int argc, char **argv) {
   printf("Tempo gasto: %.3fms\n", 1000*(double)(t1-t0)/CLOCKS_PER_SEC);
 
   t0=clock();
-  time(&tempo1);
   /* Disparando threads */
   for (int i=0; i<WORKERS; i++) {
     pthread_create(&(workers[i]), NULL, worker, (void*)(&args));
@@ -81,7 +79,6 @@ int main(int argc, char **argv) {
   for (int i=0; i<WORKERS; i++) {
     pthread_join(workers[i], NULL);
   }
-  time(&tempo2);
   t1=clock();
 
   printf("- - - - - - - - - - - - - - - - - - - - - - - - -\n");
@@ -90,7 +87,6 @@ int main(int argc, char **argv) {
   printf("Tamanho da matriz de convolução: 3x3\n");
   printf("Estratégia: threads, usando 3 threads\n");
   printf("Tempo gasto: %.3fms\n", 1000*(double)(t1-t0)/CLOCKS_PER_SEC);
-  printf("Tempo gasto: %.3fms\n", difftime(tempo1,tempo2)/1000.0);
 
   /* Create shared memory area */
   img_compartilhada = (imagem*) mmap(NULL, sizeof(imagem), protection, visibility, 0, 0);
