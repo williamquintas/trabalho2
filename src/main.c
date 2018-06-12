@@ -57,6 +57,20 @@ int main(int argc, char **argv) {
   args.filtrada = filtrada;
 
   t0=clock();
+  for (int i = 0; i < img.height; i++) {
+    blur_line(&img, filtrada, RED, i);
+    blur_line(&img, filtrada, GREEN, i);
+    blur_line(&img, filtrada, BLUE, i);
+  }
+  t1=clock();
+
+  printf("\nArquivo da imagem: %s\n", argv[1]);
+  printf("Resolução: %dpixels x %dpixels\n", img.width, img.height);
+  printf("Tamanho da matriz de convolução: 3x3\n");
+  printf("Estratégia: linha de execução única\n");
+  printf("Tempo gasto: %.3fms\n", 1000*(double)(t1-t0)/CLOCKS_PER_SEC);
+
+  t0=clock();
   /* Disparando threads */
   for (int i=0; i<WORKERS; i++) {
     pthread_create(&(workers[i]), NULL, worker, (void*)(&args));
@@ -67,7 +81,8 @@ int main(int argc, char **argv) {
   }
   t1=clock();
 
-  printf("\nArquivo da imagem: %s\n", argv[1]);
+  printf("- - - - - - - - - - - - - - - - - - - - - - - - -\n");
+  printf("Arquivo da imagem: %s\n", argv[1]);
   printf("Resolução: %dpixels x %dpixels\n", img.width, img.height);
   printf("Tamanho da matriz de convolução: 3x3\n");
   printf("Estratégia: threads, usando 3 threads\n");
