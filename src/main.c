@@ -81,7 +81,7 @@ int main(int argc, char **argv) {
   for (int i=0; i<WORKERS; i++) {
     pthread_join(workers[i], NULL);
   }
-  time(tempo2);
+  time(&tempo2);
   t1=clock();
 
   printf("- - - - - - - - - - - - - - - - - - - - - - - - -\n");
